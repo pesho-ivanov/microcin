@@ -10,7 +10,7 @@ if [ $# -ge 2 ]; then PROPERTIES_FILE=$2; fi
 if [ $# -ge 3 ]; then CONSTS_FILE=$3; fi
 if [ $# -ge 4 ]; then RESULTS_FILE=$4; fi
 
-CONSTS=$(cat $CONSTS_FILE | tr -d '\n') 
+CONSTS="-const $(cat $CONSTS_FILE | tr -d '\n')"
 RESULTS="-exportresults $RESULTS_FILE"
 OTHER=""
 ADDITIONAL=${*:5}         # additional command line arguments
