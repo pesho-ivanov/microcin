@@ -6,12 +6,12 @@ ctmc
 //-----------------------------------------------------------------------
 // modules for the different components
 
-const int MAX_MCC_IN  = 100;
-const int MAX_MCC_OUT = 100;
+const int MAX_MCC_IN;
+const int MAX_MCC_OUT;
 
-const double synthesis_rate    ;
-const double output_rate       ;
-const double input_rate        = 1e-10;
+const double synthesis_rate;
+const double output_rate;
+const double input_rate;
 const double inactivation_rate;
 
 module microcin

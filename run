@@ -1,9 +1,9 @@
 #!/bin/bash
 
-MODEL_FILE="microcin.pm"
-PROPERTIES_FILE="microcin.csl"
-CONSTS_FILE="const.txt"
-RESULTS_FILE="res.txt"
+MODEL_FILE="microcin.pm"         # CTMC model 
+PROPERTIES_FILE="microcin.csl"   # tested properties over the model
+CONSTS_FILE="const.in"          # unknown parameters from MODEL and PROPERTIES files
+RESULTS_FILE="res.out"           # simulation/verification results
 
 if [ $# -ge 1 ]; then MODEL_FILE=$1; fi
 if [ $# -ge 2 ]; then PROPERTIES_FILE=$2; fi
@@ -12,11 +12,13 @@ if [ $# -ge 4 ]; then RESULTS_FILE=$4; fi
 
 CONSTS="-const $(cat $CONSTS_FILE | tr -d '\n')"
 RESULTS="-exportresults $RESULTS_FILE"
-OTHER=""
+OTHER="-sor"
 ADDITIONAL=${*:5}         # additional command line arguments
 
 ARGS="$MODEL_FILE $PROPERTIES_FILE $CONSTS $RESULTS $OTHER $ADDITIONAL"
 
 echo "prism "$ARGS
 prism $ARGS
+
+awk 'BEGIN{RS="\n\n"; ORS=""} { cnt++; print $0 > cnt".out" }' $RESULTS_FILE
 

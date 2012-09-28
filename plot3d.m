@@ -1,4 +1,4 @@
-function plot3d(results_file)
+function [X, Y, Z] = plot3d(results_file)
 %PLOT3D plots a PRISM results file
 
     res = importdata(results_file, '\t');
@@ -14,6 +14,7 @@ function plot3d(results_file)
     Y = vec2mat(Y, cols);
     Z = vec2mat(Z, cols);
 
+    figure;
     surf(X, Y, Z);
     labels = strrep(res.colheaders(:), '_', '\_')';
     title(res.textdata(1));
