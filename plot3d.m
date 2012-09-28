@@ -15,4 +15,9 @@ function plot3d(results_file)
     Z = vec2mat(Z, cols);
 
     surf(X, Y, Z);
+    labels = strrep(res.colheaders(:), '_', '\_')';
+    title(res.textdata(1));
+    xlabel(labels(1));
+    ylabel(labels(2));
+    zlabel(labels(3));
 end
