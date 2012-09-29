@@ -6,8 +6,10 @@ import shutil # High-level file operations (to delete a non-empty directory)
 import math 
 
 A = []
-A.append( ('synthesis_rate', 1e-6, 1e3, 10) )
+A.append( ('MAX_MCC_IN', 100) )
+A.append( ('MAX_MCC_OUT', 100) )
 A.append( ('input_rate', 1e-10) )
+A.append( ('synthesis_rate', 1e-6, 1e3, 10) )
 A.append( ('output_rate', 1e-6, 1e3, 10) )
 A.append( ('inactivation_rate', 1e-6, 1e3, 10) )
 A.append( ('T', 120) )
@@ -31,8 +33,9 @@ def rec_gen(lvl, s):
   global file_cnt
 
   if lvl >= len(A):
-    print s[:-2]          
-    with open( file_path + file_beg + '.' + str(file_cnt).zfill(4), 'w' ) as f:   # current file name
+    fn = file_path + file_beg + '.' + str(file_cnt).zfill(4)
+    with open(fn, 'w') as f:   # current file name
+      os.chmod(fn, 0777)
       f.write(s[:-2])           # without '\n' and ','
       file_cnt += 1
     return
@@ -46,7 +49,7 @@ if __name__ == '__main__':
 
   if os.access(file_path, os.F_OK):
     shutil.rmtree(file_path)
-    #os.removedirs(file_path)
   os.mkdir(file_path)
 
   rec_gen(0, "")
+  print str(file_cnt) + ' const files generated in ' + file_path

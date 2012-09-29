@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 MODEL_FILE="microcin.pm"         # CTMC model 
 PROPERTIES_FILE="microcin.csl"   # tested properties over the model
