@@ -3,8 +3,9 @@ const int death_limit;
 
 "internalMcC": R{"in"}=? [ I=T ]
 "externalMcC": R{"out"}=? [ I=T ]
-"cell_death_prob": S=? [ McCin > death_limit ]
+"cell_death_prob": P=? [ F McCin > death_limit ]
 
+//"cell_death_prob": S=? [ McCin > death_limit ]
 //R{"out_over_in"}=? [ I=10 ]
 
 //"die": R{"time"}=? [ F McCin > 5 ]

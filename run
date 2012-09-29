@@ -5,15 +5,16 @@ PROPERTIES_FILE="microcin.csl"   # tested properties over the model
 CONSTS_FILE="const.in"          # unknown parameters from MODEL and PROPERTIES files
 RESULTS_FILE="res.out"           # simulation/verification results
 
-if [ $# -ge 1 ]; then MODEL_FILE=$1; fi
-if [ $# -ge 2 ]; then PROPERTIES_FILE=$2; fi
-if [ $# -ge 3 ]; then CONSTS_FILE=$3; fi
-if [ $# -ge 4 ]; then RESULTS_FILE=$4; fi
+#if [ $# -ge 1 ]; then MODEL_FILE=$1; fi
+#if [ $# -ge 2 ]; then PROPERTIES_FILE=$2; fi
+#if [ $# -ge 3 ]; then CONSTS_FILE=$3; fi
+#if [ $# -ge 4 ]; then RESULTS_FILE=$4; fi
 
 CONSTS="-const $(cat $CONSTS_FILE | tr -d '\n')"
 RESULTS="-exportresults $RESULTS_FILE"
 OTHER="-sor"
-ADDITIONAL=${*:5}         # additional command line arguments
+#ADDITIONAL=${*:5}         # additional command line arguments
+ADDITIONAL=$@               # additional command line arguments
 
 ARGS="$MODEL_FILE $PROPERTIES_FILE $CONSTS $RESULTS $OTHER $ADDITIONAL"
 
