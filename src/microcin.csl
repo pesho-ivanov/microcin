@@ -1,11 +1,13 @@
 const double T;
-const int death_limit;
 
 "internalMcC": R{"in"}=? [ I=T ]
 "externalMcC": R{"out"}=? [ I=T ]
-"cell_death_prob": P=? [ F McCin > death_limit ]
+"cell_death_prob": P=? [ F<=T McCin>=DEATH_LIMIT ]
 
-//"cell_death_prob": S=? [ McCin > death_limit ]
+//"cell_death_prob": P=? [ F in time T McCin > DEATH_LIMIT ]
+
+
+//"cell_death_prob": S=? [ McCin > DEATH_LIMIT ]
 //R{"out_over_in"}=? [ I=10 ]
 
 //"die": R{"time"}=? [ F McCin > 5 ]

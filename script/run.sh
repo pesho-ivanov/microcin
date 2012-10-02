@@ -1,9 +1,11 @@
 #!/bin/sh
 
-MODEL_FILE="microcin.pm"         # CTMC model 
-PROPERTIES_FILE="microcin.csl"   # tested properties over the model
-CONSTS_FILE="const.in"          # unknown parameters from MODEL and PROPERTIES files
-RESULTS_FILE="res.out"           # simulation/verification results
+SRC_DIR="./src"
+TMP_DIR="./tmp"
+MODEL_FILE=$SRC_DIR/"microcin.pm"         # CTMC model 
+PROPERTIES_FILE=$SRC_DIR/"microcin.csl"   # tested properties over the model
+CONSTS_FILE=$TMP_DIR/"const.in"          # unknown parameters from MODEL and PROPERTIES files
+RESULTS_FILE=$TMP_DIR/"res.out"           # simulation/verification results
 
 #if [ $# -ge 1 ]; then MODEL_FILE=$1; fi
 #if [ $# -ge 2 ]; then PROPERTIES_FILE=$2; fi
@@ -12,7 +14,7 @@ RESULTS_FILE="res.out"           # simulation/verification results
 
 CONSTS="-const $(cat $CONSTS_FILE | tr -d '\n')"
 RESULTS="-exportresults $RESULTS_FILE"
-OTHER="-sor"
+OTHER="-sor -fixdl"
 #ADDITIONAL=${*:5}         # additional command line arguments
 ADDITIONAL=$@               # additional command line arguments
 

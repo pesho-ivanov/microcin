@@ -1,8 +1,0 @@
-MAX_MCC_IN=100,
-MAX_MCC_OUT=100,
-input_rate=1e-10,
-synthesis_rate=1e-06,
-output_rate=1e-06,
-inactivation_rate=0.1,
-T=120,
-death_limit=30
