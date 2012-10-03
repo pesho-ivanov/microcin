@@ -23,5 +23,5 @@ ARGS="$MODEL_FILE $PROPERTIES_FILE $CONSTS $RESULTS $OTHER $ADDITIONAL"
 echo "prism "$ARGS
 prism $ARGS
 
-awk 'BEGIN{RS="\n\n"; ORS=""} { cnt++; print $0 > cnt".out" }' $RESULTS_FILE
+awk -v res_file=$RESULTS_FILE 'BEGIN{RS="\n\n"; ORS=""} { cnt++; print $0 > res_file"."cnt }' $RESULTS_FILE
 
