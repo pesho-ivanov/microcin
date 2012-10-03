@@ -9,9 +9,9 @@ A = []
 A.append( ('MAX_MCC_OUT', 'const', (300,) ) )
 A.append( ('DEATH_LIMIT', 'const', (30,) ) )
 A.append( ('input_rate', 'const', (0,) ) )
-A.append( ('synthesis_rate', 'exp', (1e-3, 1e0, 10) ) )
-A.append( ('output_rate', 'exp', (1e-3, 1e0, 10) ) )
-A.append( ('inactivation_rate', 'exp', (1e-3, 1e0, 10) ) )
+A.append( ('synthesis_rate', 'exp', (1e-6, 1e0, 2) ) )
+A.append( ('output_rate', 'exp', (1e-6, 1e0, 2) ) )
+A.append( ('inactivation_rate', 'exp', (1e-6, 1e0, 2) ) )
 A.append( ('T', 'const', (60,) ) )
 
 file_path = 'const/'
