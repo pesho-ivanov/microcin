@@ -12,7 +12,7 @@ def read_const(fn):
 
 def read_res(fn): 
   with open(fn, 'r') as f:
-    X = [ line.strip() for line in f.readlines() if line.strip()!='' and line.strip()!='Result' ]
+    X = [ line.strip(' :\n') for line in f.readlines() if line.strip()!='' and line.strip()!='Result' ]
     assert( len(X)%2 == 0 )
     res = dict([ (X[i],float(X[i+1])) for i in xrange(0,len(X),2) ])
     return res

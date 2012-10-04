@@ -6,12 +6,12 @@ import shutil # High-level file operations (to delete a non-empty directory)
 import math 
 
 A = []
-A.append( ('MAX_MCC_OUT', 'const', (300,) ) )
-A.append( ('DEATH_LIMIT', 'const', (30,) ) )
+A.append( ('MAX_MCC_OUT', 'const', (100,) ) )
+A.append( ('DEATH_LIMIT', 'const', (10,) ) )
 A.append( ('input_rate', 'const', (0,) ) )
-A.append( ('synthesis_rate', 'exp', (1e-6, 1e0, 2) ) )
-A.append( ('output_rate', 'exp', (1e-6, 1e0, 2) ) )
-A.append( ('inactivation_rate', 'exp', (1e-6, 1e0, 2) ) )
+A.append( ('synthesis_rate', 'exp', (1e-3, 1e2, 5) ) )
+A.append( ('output_rate', 'exp', (1e-8, 1e2, 5) ) )
+A.append( ('inactivation_rate', 'exp', (1e-8, 1e0, 5) ) )
 A.append( ('T', 'const', (60,) ) )
 
 file_path = 'const/'
