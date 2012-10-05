@@ -2,3 +2,4 @@
 /const/
 /res/
 /res-archive/
+*.pyc

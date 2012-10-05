@@ -2,6 +2,8 @@
 
 import sys
 import os 
+import simplejson 
+
 from pprint import pprint
 
 def read_const(fn):
@@ -17,6 +19,10 @@ def read_res(fn):
     res = dict([ (X[i],float(X[i+1])) for i in xrange(0,len(X),2) ])
     return res
 
+def read_consts_table(fn):
+  with open(fn, 'r') as f:
+    return simplejson.load(f)
+
 def collect_results(path):
   path = path.strip('/') + '/'
   print path
@@ -25,17 +31,22 @@ def collect_results(path):
   file_cnt = 0
   file_const_beg = 'const.in'
   file_res_beg = 'res.out'
+  file_consts_table = 'consts_table.txt'
 
-  data = []
+  records = []
 
+  fn_consts_table = path + file_consts_table
+  consts_table = read_consts_table(fn_consts_table)
+  assert (os.path.isfile(fn_consts_table))
+ 
   while True:
     fn_const = path + file_const_beg + '.' + str(file_cnt).zfill(4)
     fn_res = path + file_res_beg + '.' + str(file_cnt).zfill(4)
+    
     file_cnt = file_cnt+1
 
-    #print fn_const, fn_res
     if not os.path.isfile(fn_const) or not os.path.isfile(fn_res):
-        break
+      break
   
     const = read_const(fn_const)
     res = read_res(fn_res)
@@ -43,9 +54,12 @@ def collect_results(path):
     #pprint(const)
     #pprint(res)
 
-    data.append( { 'const': const, 'res': res } )
+    records.append( { 'const': const, 'res': res, 'consts_table': consts_table } )
 
-  print "Results and constants collected from %d files." % (len(data))
+  print "Results and constants collected from %d files." % (len(records))
+  #pprint(consts_table)
+  
+  data = { 'records': records, 'consts_table': consts_table }
   return data
 
 if __name__ == "__main__":
