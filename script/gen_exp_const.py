@@ -13,7 +13,7 @@ A['input_rate'] = ( 'const', (0,) )
 A['synthesis_rate'] = ( 'exp', (1e-3, 1e2, 10) )
 A['output_rate'] = ( 'exp', (1e-8, 1e2, 10) )
 A['inactivation_rate'] = ( 'exp', (1e-12, 1e0, 100) )
-A['T'] = ( 'const', (10, 10*10, 10*10*10, ) )
+A['T'] = ( 'exp', (1e1, 1e5, 10) )
 
 file_path = 'const/'
 file_cnt = 0

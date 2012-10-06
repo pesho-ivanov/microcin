@@ -1,10 +1,14 @@
 import sys
+import os 
+import re
 
+# visualization code
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 from matplotlib import pyplot, mpl
 
+# my code
 import collect_results as cr
 from gen_exp_const import custom_range
 reload(cr)
@@ -17,6 +21,7 @@ int_mcc_tag = '"internalMcC": R{"in"}=? [ I=T ]'
 all_tags = [ ext_mcc_tag, int_mcc_tag ]
 
 params = [ 'synthesis_rate', 'output_rate', 'inactivation_rate' ]
+image_dir = 'images/'
 
 def const_to_array(record, var, test):
 # returns all the 'var' values of parameters for which the 'test' is satisfied
@@ -39,7 +44,10 @@ def make_test(tag, s):
   else:
     assert(False)
   
-def plot_synt_out_inact(records, test_tag, val):
+def plot_synt_out_inact(records, test_tag_name, val):
+  test_tag = eval(test_tag_name)
+
+  plt.clf()
   fig = plt.figure()
   ax = fig.add_subplot(111, projection='3d')
   
@@ -59,10 +67,8 @@ def plot_synt_out_inact(records, test_tag, val):
   max_c = max(c)
   volume = [ 200.0*(cc/max_c) for cc in c ]
 
-  scat = ax.scatter(x, y, z, c=c, cmap=mpl.cm.jet, marker='.', s=volume, alpha=1, linewidths=None)
+  scat = ax.scatter(x, y, z, c=c, cmap=mpl.cm.jet, marker='o', s=volume, alpha=1, linewidths=None)
   
-  fig.colorbar(scat, shrink=0.5, aspect=5)
-
   # add axes labels
   ax.set_xlabel('log10('+params[0]+')')
   ax.set_ylabel('log10('+params[1]+')')
@@ -71,11 +77,22 @@ def plot_synt_out_inact(records, test_tag, val):
   #ax.set_xticks([1,2])
   #pyplot.yticks([1,2], ['a', 'b'])
 
-  # add title and show
-  time = records[0]['const']['T']
-  plt.title(test_tag + '\n' + 'T=' + str(time))
-  plt.show()
-  plt.savefig('img-T' + str(time) + '.png')
+  time = int(records[0]['const']['T'])
+  property_name = re.search(r'"[^"]*"', test_tag).group().strip('"')
+  image_file = os.path.join(image_dir, test_tag_name + '-T' + str(time) + '.png')
+  
+  # add colorbar
+  colbar = fig.colorbar(scat, shrink=0.5, aspect=20)
+  colbar.set_label( property_name + ' (#molecules)' )
+
+  # add title
+  plt.title( property_name + ' (T=' + str(time) + ')' )
+
+  # show and save
+  plt.savefig(image_file)
+  #plt.show()
+  #plt.close()
+  #ax.clear()
 
 def load_data(res_dir):
   # collect the const&res data
@@ -105,7 +122,8 @@ if __name__ == "__main__":
 
   for val in custom_range(consts_table['T']):
     r = records_slice(records, var='T', val=val)
-    plot_synt_out_inact(r, int_mcc_tag, '>2')
+    plot_synt_out_inact(r, 'int_mcc_tag', '>2', )
+    plot_synt_out_inact(r, 'ext_mcc_tag', '>2', )
 
   #plot_synt_out_inact(records, death_tag, '>0.01')
   #plot_synt_out_inact(r1, ext_mcc_tag, '>2')
