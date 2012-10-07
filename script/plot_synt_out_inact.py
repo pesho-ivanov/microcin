@@ -130,7 +130,6 @@ if __name__ == "__main__":
   print 'Output dir: ', image_dir
   
   for t in custom_range(consts_table['T']):
-    if t>200000: continue
     r = records_slice(records, var='T', val=t)
     int_fn = plot_synt_out_inact(r, 'int_mcc_tag', '>2', image_dir)
     ext_fn = plot_synt_out_inact(r, 'ext_mcc_tag', '>2', image_dir)
