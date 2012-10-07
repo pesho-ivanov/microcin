@@ -1,5 +1,6 @@
 import sys
 import os 
+import shutil 
 import re
 
 # visualization code
@@ -21,7 +22,6 @@ int_mcc_tag = '"internalMcC": R{"in"}=? [ I=T ]'
 all_tags = [ ext_mcc_tag, int_mcc_tag ]
 
 params = [ 'synthesis_rate', 'output_rate', 'inactivation_rate' ]
-image_dir = 'images/'
 
 def const_to_array(record, var, test):
 # returns all the 'var' values of parameters for which the 'test' is satisfied
@@ -44,7 +44,7 @@ def make_test(tag, s):
   else:
     assert(False)
   
-def plot_synt_out_inact(records, test_tag_name, val):
+def plot_synt_out_inact(records, test_tag_name, val, image_dir):
   test_tag = eval(test_tag_name)
 
   plt.clf()
@@ -79,7 +79,7 @@ def plot_synt_out_inact(records, test_tag_name, val):
 
   time = int(records[0]['const']['T'])
   property_name = re.search(r'"[^"]*"', test_tag).group().strip('"')
-  image_file = os.path.join(image_dir, test_tag_name + '-T' + str(time) + '.png')
+  image_file = os.path.join(image_dir, test_tag_name + '-T' + str(time).zfill(8) + '.png')
   
   # add colorbar
   colbar = fig.colorbar(scat, shrink=0.5, aspect=20)
@@ -93,6 +93,8 @@ def plot_synt_out_inact(records, test_tag_name, val):
   #plt.show()
   #plt.close()
   #ax.clear()
+
+  return image_file
 
 def load_data(res_dir):
   # collect the const&res data
@@ -120,12 +122,25 @@ if __name__ == "__main__":
   records = data['records']
   consts_table = data['consts_table']
 
-  for val in custom_range(consts_table['T']):
-    r = records_slice(records, var='T', val=val)
-    plot_synt_out_inact(r, 'int_mcc_tag', '>2', )
-    plot_synt_out_inact(r, 'ext_mcc_tag', '>2', )
+  basename = os.path.basename(res_dir.strip('/'))
+  image_dir = os.path.join('images/', basename)
+  if os.access(image_dir, os.F_OK):
+    shutil.rmtree(image_dir)
+  os.mkdir(image_dir)
+  print 'Output dir: ', image_dir
+  
+  for t in custom_range(consts_table['T']):
+    if t>200000: continue
+    r = records_slice(records, var='T', val=t)
+    int_fn = plot_synt_out_inact(r, 'int_mcc_tag', '>2', image_dir)
+    ext_fn = plot_synt_out_inact(r, 'ext_mcc_tag', '>2', image_dir)
+    joint_fn = ' '.join(['convert', int_fn, ext_fn, '+append', os.path.join(image_dir, 'T'+str(int(t)).zfill(8)+'.png')])
+    os.system(joint_fn)
+
+  os.system(' '.join(['convert', '-delay 100', os.path.join(image_dir, 'T*.png'), os.path.join(image_dir, basename+'.gif')]))
 
   #plot_synt_out_inact(records, death_tag, '>0.01')
   #plot_synt_out_inact(r1, ext_mcc_tag, '>2')
   #plot_synt_out_inact(r1, int_mcc_tag, '>2')
+
 
