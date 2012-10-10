@@ -25,6 +25,7 @@ all_tags = [ ext_mcc_tag, int_mcc_tag ]
 
 #params = [ 'synthesis_rate', 'output_rate', 'inactivation_rate' ]
 params = [ 'synthesis_rate', 'output_rate', 'input_rate' ]
+images_dir_name = 'images/'
 
 def const_to_array(record, var, test):
 # returns all the 'var' values of parameters for which the 'test' is satisfied
@@ -136,7 +137,7 @@ if __name__ == "__main__":
   consts_table = data['consts_table']
 
   basename = os.path.basename(res_dir.strip('/'))
-  image_dir = os.path.join('images/', basename)
+  image_dir = os.path.join(res_dir, images_dir_name)
   if os.access(image_dir, os.F_OK):
     shutil.rmtree(image_dir)
   os.mkdir(image_dir)

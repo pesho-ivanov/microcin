@@ -1,9 +1,9 @@
 {
-"output_rate": ["exp", [1e-08, 100.0, 10]],
-"synthesis_rate": ["exp", [0.001, 100.0, 10]],
-"T": ["exp", [10.0, 10000.0, 10]],
+"output_rate": ["exp", [1e-08, 100.0, 100]],
+"synthesis_rate": ["exp", [0.001, 100.0, 100]],
+"T": ["const", [1000.0]],
 "inactivation_rate": ["const", [1e-06]],
-"input_rate": ["exp", [1e-08, 1e2, 10]],
+"input_rate": ["const", [1e-04]],
 "DEATH_LIMIT": ["const", [10]],
 "MAX_MCC_OUT": ["const", [100]]
 }
