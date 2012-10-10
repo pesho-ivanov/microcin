@@ -1,10 +1,19 @@
 #!/bin/sh
 
+if [ $# -ne 1 ]
+then
+  echo "Usage: <res_dir>"
+  exit 1
+fi
+
 ROOT_DIR="./"
 SRC_DIR=$ROOT_DIR"src/"
+SCRIPTS_DIR=$ROOT_DIR"scripts/"
+ARCHIVE_DIR=$ROOT_DIR"archive/"
+RES_DIR=$ARCHIVE_DIR$1"/"
 CONSTS_DIR=$RES_DIR"const/"
 OUT_DIR=$RES_DIR"out/"
-SCRIPTS_DIR=$ROOT_DIR"scripts/"
+IMG_DIR=$RES_DIR"images/"
 
 CONSTS_TABLE_FN="consts_table.txt" # input grid parameters
 MODEL_FN="microcin.pm"          # CTMC model 
@@ -27,22 +36,16 @@ LOG_FILE=$RES_DIR$LOG_FN
 DEFAULT_ARGS="-sor -fixdl"
 #CMD_LINE_ARGS=$@                             # additional command line arguments
 
-if [ $# -ne 1 ]
-then
-  echo "Usage: <res_dir>"
-  exit 1
-fi
-
-RES_DIR=$ARCHIVE$1
-
-$SCRIPT_DIR$PLOT_SCRIPT $RES_DIR        # run the generative script
-
 if [ -d $RES_DIR ]
 then
   rm $RES_DIR -r
 fi
 mkdir $RES_DIR
 mkdir $CONSTS_DIR
+mkdir $OUT_DIR
+
+# run the generative script
+$SCRIPT_DIR$GEN_SCRIPT $CONSTS_DIR $CONSTS_TABLE_FILE
 
 if [ ! -f $CONSTS_TABLE_FILE ] # || (! -f $MODEL_FILE) || (! -f $PROPERTIES_FILE) ]]
 then
@@ -70,7 +73,7 @@ for f in $CONSTS_DIR/*; do
   echo "$num"
   
   CONSTS="-const $(cat $f | tr -d '\n')"
-  RES_FN="$1.out.$num"
+  RES_FN="res.out.$num"
   RESULTS="-exportresults $OUT_DIR$RES_FN"
   ARGS="$MODEL_FILE $PROPERTIES_FILE $CONSTS $RESULTS $DEFAULT_ARGS"
   
@@ -85,4 +88,4 @@ done
 
 echo "finish" >> $TIME_FILE
 
-$SCRIPT_DIR$PLOT_SCRIPT $RES_DIR        # run the plot script
+$SCRIPT_DIR$PLOT_SCRIPT $RES_DIR $OUT_DIR $IMG_DIR       # run the plot script

@@ -29,19 +29,19 @@ def collect_results(path):
 
   S = []
   file_cnt = 0
-  file_const_beg = 'const.in'
-  file_res_beg = 'res.out'
+  file_const_beg = 'const/const.in'
+  file_res_beg = 'out/res.out'
   file_consts_table = 'consts_table.txt'
 
   records = []
 
-  fn_consts_table = path + file_consts_table
+  fn_consts_table = os.path.join(path, file_consts_table)
   consts_table = read_consts_table(fn_consts_table)
   assert (os.path.isfile(fn_consts_table))
  
   while True:
-    fn_const = path + file_const_beg + '.' + str(file_cnt).zfill(4)
-    fn_res = path + file_res_beg + '.' + str(file_cnt).zfill(4)
+    fn_const = os.path.join(path, file_const_beg) + '.' + str(file_cnt).zfill(4)
+    fn_res = os.path.join(path, file_res_beg) + '.' + str(file_cnt).zfill(4)
     
     file_cnt = file_cnt+1
 

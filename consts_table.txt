@@ -1,6 +1,6 @@
 {
-"output_rate": ["exp", [1e-08, 100.0, 100]],
-"synthesis_rate": ["exp", [0.001, 100.0, 100]],
+"output_rate": ["exp", [1e-04, 1.0, 100]],
+"synthesis_rate": ["exp", [0.001, 1.0, 100]],
 "T": ["const", [1000.0]],
 "inactivation_rate": ["const", [1e-06]],
 "input_rate": ["const", [1e-04]],
