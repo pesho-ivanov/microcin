@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import sys
 import os 
 import shutil 
@@ -21,7 +23,8 @@ int_mcc_tag = '"internalMcC": R{"in"}=? [ I=T ]'
 #all_tags = [ death_tag, ext_mcc_tag, int_mcc_tag ]
 all_tags = [ ext_mcc_tag, int_mcc_tag ]
 
-params = [ 'synthesis_rate', 'output_rate', 'inactivation_rate' ]
+#params = [ 'synthesis_rate', 'output_rate', 'inactivation_rate' ]
+params = [ 'synthesis_rate', 'output_rate', 'input_rate' ]
 
 def const_to_array(record, var, test):
 # returns all the 'var' values of parameters for which the 'test' is satisfied
@@ -29,7 +32,16 @@ def const_to_array(record, var, test):
 
 def res_to_array(record, tag, test):
   return [ d['res'][tag] for d in record if test(d['res']) ] 
-  
+
+def interval_minmax(interval):
+  distr = interval[0]
+  arr = interval[1]
+
+  if distr=='const':
+    return [min(arr), max(arr)]
+  elif distr=='exp':
+    return [arr[0], arr[1]]
+
 def make_test(tag, s):
 # make a lambda that tests whether the 'tag'-parameter is less/greater than a number
 # s is a string '<[num]' or '>[num]'
@@ -44,7 +56,7 @@ def make_test(tag, s):
   else:
     assert(False)
   
-def plot_synt_out_inact(records, test_tag_name, val, image_dir):
+def plot_synt_out_inact(records, test_tag_name, val, image_dir, consts_table):
   test_tag = eval(test_tag_name)
 
   plt.clf()
@@ -53,19 +65,19 @@ def plot_synt_out_inact(records, test_tag_name, val, image_dir):
   
   # set min/max limits
   testall = make_test(test_tag, '>-inf')
-  xall, yall, zall = [ np.log10(const_to_array(records, var, testall)) for var in params ]
-  ax.set_xlim3d([min(xall), max(xall)])
-  ax.set_ylim3d([min(yall), max(yall)])
-  ax.set_zlim3d([min(zall), max(zall)])
- 
+  x_interval, y_interval, z_interval = [ interval_minmax(consts_table[var]) for var in params ]
+  ax.set_xlim3d(x_interval)
+  ax.set_ylim3d(y_interval)
+  ax.set_zlim3d(z_interval) 
+
   # collect needed points
   #test = make_test(test_tag, val)
   test = make_test(test_tag, '>-inf')
   x, y, z = [ np.log10(const_to_array(records, var, test)) for var in params ]
-  
+
   c = res_to_array(records, test_tag, test)
   max_c = max(c)
-  volume = [ 200.0*(cc/max_c) for cc in c ]
+  volume = [ 100.0*(cc/max_c) for cc in c ]
 
   scat = ax.scatter(x, y, z, c=c, cmap=mpl.cm.jet, marker='o', s=volume, alpha=1, linewidths=None)
   
@@ -83,12 +95,13 @@ def plot_synt_out_inact(records, test_tag_name, val, image_dir):
   
   # add colorbar
   colbar = fig.colorbar(scat, shrink=0.5, aspect=20)
-  colbar.set_label( property_name + ' (#molecules)' )
+  colbar.set_label( property_name + ' [E(molecules)]' )
 
   # add title
   plt.title( property_name + ' (T=' + str(time) + ')' )
 
   # show and save
+  print 'An image saved to ', image_file
   plt.savefig(image_file)
   #plt.show()
   #plt.close()
@@ -131,8 +144,10 @@ if __name__ == "__main__":
   
   for t in custom_range(consts_table['T']):
     r = records_slice(records, var='T', val=t)
-    int_fn = plot_synt_out_inact(r, 'int_mcc_tag', '>2', image_dir)
-    ext_fn = plot_synt_out_inact(r, 'ext_mcc_tag', '>2', image_dir)
+    int_fn = plot_synt_out_inact(r, 'int_mcc_tag', '>2', image_dir, consts_table)
+    ext_fn = plot_synt_out_inact(r, 'ext_mcc_tag', '>2', image_dir, consts_table)
+    
+    # horizontally glue to a new image
     joint_fn = ' '.join(['convert', int_fn, ext_fn, '+append', os.path.join(image_dir, 'T'+str(int(t)).zfill(8)+'.png')])
     os.system(joint_fn)
 
@@ -141,5 +156,3 @@ if __name__ == "__main__":
   #plot_synt_out_inact(records, death_tag, '>0.01')
   #plot_synt_out_inact(r1, ext_mcc_tag, '>2')
   #plot_synt_out_inact(r1, int_mcc_tag, '>2')
-
-

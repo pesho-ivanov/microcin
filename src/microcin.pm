@@ -20,7 +20,7 @@ module microcin
   
   [synthesis]     McCin<DEATH_LIMIT -> synthesis_rate : (McCin'=McCin+1);
   [output]        McCin<DEATH_LIMIT & McCin>0 -> McCin*output_rate : (McCin'=McCin-1) & (McCout'=min(McCout+1, MAX_MCC_OUT));
-  //[input]         McCin<DEATH_LIMIT & McCin>0 & McCout>0 -> McCin*input_rate : (McCin'=min(McCin+1, DEATH_LIMIT)) & (McCout'=McCout-1);
+  [input]         McCin<DEATH_LIMIT & McCin>0 & McCout>0 -> McCout*input_rate : (McCin'=min(McCin+1, DEATH_LIMIT)) & (McCout'=McCout-1);
   [inactivation]  McCin<DEATH_LIMIT & McCin>0 -> McCin*inactivation_rate : (McCin'=McCin-1);
 endmodule
 

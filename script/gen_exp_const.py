@@ -1,19 +1,9 @@
 #!/usr/bin/python
 
-import sys
 import os 
 import shutil # High-level file operations (to delete a non-empty directory) 
 import math 
 import simplejson
-
-A = {}
-A['MAX_MCC_OUT'] = ( 'const', (100,) )
-A['DEATH_LIMIT'] = ( 'const', (10,) )
-A['input_rate'] = ( 'const', (0,) )
-A['synthesis_rate'] = ( 'exp', (1e-3, 1e2, 2) )
-A['output_rate'] = ( 'exp', (1e-8, 1e2, 10) )
-A['inactivation_rate'] = ( 'const', (1e-6,) )
-A['T'] = ( 'exp', (1e1, 1e6, 2) )
 
 file_path = 'const/'
 file_cnt = 0
@@ -53,17 +43,24 @@ def cleardir():
     shutil.rmtree(file_path)
   os.mkdir(file_path)
 
-def gen():
+def gen(A):
   rec_gen(list(A), 0, "")
   print str(file_cnt) + ' const files generated in ' + file_path
 
-def serialize():
+def read_consts_table():
+  os.system(' '.join(['cat', file_consts_table]))
+  with open(file_consts_table, 'r') as f:
+    return simplejson.load(f)
+
+'''
+def write_consts_table():
   fn = os.path.join(file_path, file_consts_table)
   with open(fn, 'w') as f:
     os.chmod(fn, 0664)
     simplejson.dump(A, f)
+'''
 
 if __name__ == '__main__': 
   cleardir()
-  serialize()
-  gen()
+  A = read_consts_table()
+  gen(A)
