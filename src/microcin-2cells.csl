@@ -2,7 +2,8 @@ const double T;
 
 "internalMcC": R{"in"}=? [ I=T ]
 "externalMcC": R{"out"}=? [ I=T ]
-"enemyMcC": R{"out"}=? [ I=T ]
+"enemyMcC": R{"enemy"}=? [ I=T ]
+
 //"cell_death_prob": P=? [ F<=T McCin>=DEATH_LIMIT ]
 
 //"cell_death_prob": P=? [ F in time T McCin > DEATH_LIMIT ]

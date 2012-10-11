@@ -1,9 +1,11 @@
 {
-"output_rate": ["exp", [1e-04, 1.0, 100]],
-"synthesis_rate": ["exp", [0.001, 1.0, 100]],
-"T": ["const", [1000.0]],
+"output_rate": ["exp", [1e-06, 100.0, 10]],
+"synthesis_rate": ["exp", [0.001, 1.000, 10]],
+"T": ["const", [10, 100, 1000]],
 "inactivation_rate": ["const", [1e-06]],
-"input_rate": ["const", [1e-04]],
+"input_rate": ["exp", [1e-06, 0.1, 10]],
+"invasion_rate": ["const", [1e-06]],
 "DEATH_LIMIT": ["const", [10]],
+"ENEMY_DEATH_LIMIT": ["const", [10]],
 "MAX_MCC_OUT": ["const", [100]]
 }

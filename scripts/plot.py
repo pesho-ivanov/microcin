@@ -20,11 +20,14 @@ reload(cr)
 death_tag = '"cell_death_prob": P=? [ F<=T McCin>=DEATH_LIMIT ]'
 ext_mcc_tag = '"externalMcC": R{"out"}=? [ I=T ]'
 int_mcc_tag = '"internalMcC": R{"in"}=? [ I=T ]'
+enemy_mcc_tag = '"enemyMcC": R{"enemy"}=? [ I=T ]'
+
 #all_tags = [ death_tag, ext_mcc_tag, int_mcc_tag ]
-all_tags = [ ext_mcc_tag, int_mcc_tag ]
+all_tags = [ ext_mcc_tag, int_mcc_tag, enemy_mcc_tag ]
 
 #params = [ 'synthesis_rate', 'output_rate', 'inactivation_rate' ]
 params = [ 'synthesis_rate', 'output_rate', 'input_rate' ]
+tag_to_const = { death_tag: 'DEATH_LIMIT', ext_mcc_tag: 'MAX_MCC_OUT', int_mcc_tag: 'DEATH_LIMIT', enemy_mcc_tag: 'ENEMY_DEATH_LIMIT' }
 #images_dir_name = 'images/'
 
 def const_to_array(record, var, test):
@@ -77,10 +80,11 @@ def plot_synt_out_inact(records, test_tag_name, val, images_dir, consts_table):
   x, y, z = [ np.log10(const_to_array(records, var, test)) for var in params ]
 
   c = res_to_array(records, test_tag, test)
-  max_c = max(c)
-  volume = [ 100.0*(cc/max_c) for cc in c ]
+  const = tag_to_const[test_tag]
+  v_min, v_max = interval_minmax( consts_table[const] )
+  volume = [ 100.0*(cc/v_max) for cc in c ]
 
-  scat = ax.scatter(x, y, z, c=c, cmap=mpl.cm.jet, marker='o', s=volume, alpha=1, linewidths=None)
+  scat = ax.scatter(x, y, z, c=c, vmin=0, vmax=v_max, cmap=mpl.cm.jet, marker='o', s=volume, alpha=1, linewidths=None)
   
   # add axes labels
   ax.set_xlabel('log10('+params[0]+')')
@@ -126,13 +130,18 @@ def records_slice(records, var, val):
   return [ r for r in records if r['const'][var]==val ] 
 
 if __name__ == "__main__":
-  if len(sys.argv)!=4:
-    print 'An argument with the results directory needed'
+  if len(sys.argv)==2:
+    res_dir = sys.argv[1]
+    out_dir = os.path.join(res_dir, 'out/')
+    images_dir = os.path.join(res_dir, 'images/')
+  elif len(sys.argv)==4:  
+    res_dir = sys.argv[1]
+    out_dir = sys.argv[2]
+    images_dir = sys.argv[3]
+  else:
+    print 'Arguments: "<res_dir> <out_dir> <images_dir>"'
+    print 'or "<res_dir>" where <out_dir>:=<res_dir>/out/ and <images_dir>:=<res_dir>/images/'
     assert(False)
-
-  res_dir = sys.argv[1]
-  out_dir = sys.argv[2]
-  images_dir = sys.argv[3]
 
   data = load_data(res_dir)
   records = data['records']
@@ -141,17 +150,19 @@ if __name__ == "__main__":
   basename = os.path.basename(res_dir.strip('/'))
   #images_dir = os.path.join(res_dir, images_dir_name)
   if os.access(images_dir, os.F_OK):
+    print 'fda'
     shutil.rmtree(images_dir)
   os.mkdir(images_dir)
   print 'Images directory: ', images_dir
   
   for t in custom_range(consts_table['T']):
     r = records_slice(records, var='T', val=t)
-    int_fn = plot_synt_out_inact(r, 'int_mcc_tag', '>2', images_dir, consts_table)
-    ext_fn = plot_synt_out_inact(r, 'ext_mcc_tag', '>2', images_dir, consts_table)
+    int_fn   = plot_synt_out_inact(r, 'int_mcc_tag',   '>2', images_dir, consts_table)
+    ext_fn   = plot_synt_out_inact(r, 'ext_mcc_tag',   '>2', images_dir, consts_table)
+    enemy_fn = plot_synt_out_inact(r, 'enemy_mcc_tag', '>2', images_dir, consts_table)
     
     # horizontally glue to a new image
-    joint_fn = ' '.join(['convert', int_fn, ext_fn, '+append', os.path.join(images_dir, 'T'+str(int(t)).zfill(8)+'.png')])
+    joint_fn = ' '.join(['convert', int_fn, ext_fn, enemy_fn, '+append', os.path.join(images_dir, 'T'+str(int(t)).zfill(8)+'.png')])
     os.system(joint_fn)
 
   os.system(' '.join(['convert', '-delay 100', os.path.join(images_dir, 'T*.png'), os.path.join(images_dir, basename+'.gif')]))
