@@ -36,13 +36,13 @@ LOG_FILE=$RES_DIR$LOG_FN
 DEFAULT_ARGS="-sor -fixdl"
 #CMD_LINE_ARGS=$@                             # additional command line arguments
 
-#if [ -d $RES_DIR ]
-#then
-#  rm $RES_DIR -r
-#fi
-#mkdir $RES_DIR
-#mkdir $CONSTS_DIR
-#mkdir $OUT_DIR
+if [ -d $RES_DIR ]
+then
+  rm $RES_DIR -r
+fi
+mkdir $RES_DIR
+mkdir $CONSTS_DIR
+mkdir $OUT_DIR
 
 # run the generative script
 $SCRIPT_DIR$GEN_SCRIPT $CONSTS_DIR $CONSTS_TABLE_FILE

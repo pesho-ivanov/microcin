@@ -42,7 +42,10 @@ def cleardir():
   os.mkdir(file_path)
 
 def gen(A, file_beg):
-  rec_gen(list(A), 0, "", file_beg)
+  B = list(A)
+  t_ind = B.index('T')
+  B[0], B[t_ind] = B[t_ind], B[0]
+  rec_gen(B, 0, "", file_beg)
   print str(file_cnt) + ' const files generated in ' + file_path
 
 def read_consts_table(file_consts_table):
