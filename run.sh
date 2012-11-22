@@ -10,7 +10,7 @@ ROOT_DIR="./"
 SRC_DIR=$ROOT_DIR"src/"
 SCRIPTS_DIR=$ROOT_DIR"scripts/"
 ARCHIVE_DIR=$ROOT_DIR"archive/"
-RES_DIR=$ARCHIVE_DIR$1"/"
+RES_DIR=$ARCHIVE_DIR$1"/"              # $1 for the first cmd argument
 CONSTS_DIR=$RES_DIR"const/"
 OUT_DIR=$RES_DIR"out/"
 IMG_DIR=$RES_DIR"images/"
@@ -38,14 +38,29 @@ DEFAULT_ARGS="-sor -fixdl"
 
 if [ -d $RES_DIR ]
 then
-  rm $RES_DIR -r
+  while true; do
+    read -p "Do you wish to keep the previous calculations and continue from the middle? " yn
+      case $yn in
+          [Nn]* ) 
+                echo 'You chose to delete the previous calculations'
+                
+                rm $RES_DIR -r
+
+                # run the generative script
+                $SCRIPT_DIR$GEN_SCRIPT $CONSTS_DIR $CONSTS_TABLE_FILE
+
+                break;;
+          [Yy]* )
+                echo 'You chose to keep the previous calculations'
+                break;;
+          * ) echo "Please answer yes or no.";;
+      esac
+  done
 fi
+
 mkdir $RES_DIR
 mkdir $CONSTS_DIR
 mkdir $OUT_DIR
-
-# run the generative script
-$SCRIPT_DIR$GEN_SCRIPT $CONSTS_DIR $CONSTS_TABLE_FILE
 
 if [ ! -f $CONSTS_TABLE_FILE ] # || (! -f $MODEL_FILE) || (! -f $PROPERTIES_FILE) ]]
 then
