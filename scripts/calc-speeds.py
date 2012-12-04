@@ -11,6 +11,7 @@ import simplejson
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
+import scipy.optimize
 
 import pylab
 
@@ -21,16 +22,17 @@ from unum import Unum
 unit      = Unum.unit
 avogadro  = 6.02214129e23
 
-CFU       = unit("CFU",      0,              "colony-forming unit")
+CFU       = unit("CFU",       0,              "colony-forming unit")
+OD_unit   = unit("OD",        0,              "optical density unit")
 molecule  = unit("molecule", mol / avogadro )
-#ul        = unit("ul",       10**-6 * L,     "microliter")
 ml        = unit("ml",       10**-3 * L,     "milliliter")
+#ul        = unit("ul",       10**-6 * L,     "microliter")
+
+possible_unit_expressions = { s, molecule/L, CFU/L, OD_unit }
 
 # all the equivalent to the lab-data units simple units
 def convert_units(num):
-  possible_units = { s, molecule/L, CFU/L }
-
-  for u in possible_units:
+  for u in possible_unit_expressions:
     try:
       res = num.asUnit(u)
     except IncompatibleUnitsError:
@@ -42,7 +44,7 @@ def convert_units(num):
   assert(False)
 
 time_unit = convert_units(s)
-from_time = convert_units(2.5*h)
+from_time = convert_units(2.0*h)
 to_time = convert_units(8.0*h)
 time_steps = 300
 grid = time_unit * np.linspace(from_time.asNumber(), to_time.asNumber(), time_steps)
@@ -67,24 +69,26 @@ def myplot(data, title, X=None, Y=None):
   pylab.close()
 
 """ returns a polynomial"""
-def approx(X, Y, polydeg, var_name):
+def approx_poly(X, Y, polydeg, var_name):
   coefs = np.polyfit(X.asNumber(), Y.asNumber(), polydeg)
   poly = np.poly1d(coefs)
   data = Unum(Y._unit) * array( poly(grid.asNumber()) )
 
-  title = var_name + '-polyfit-deg' + str(polydeg)
-  myplot(data, title, X, Y)
-
   return data
 
-  img_file = os.path.join(data_dir, title + '.png')
-  plt.subplot(111)
-  plt.plot(X.asNumber(), Y.asNumber(), 'o', grid.asNumber(), data.asNumber(), '-')
-  plt.legend(['data', 'deg'+str(polydeg)], loc='best')
-  pylab.title(var_name)
-  plt.savefig(img_file)
-  plt.close()
-  print "A figure saved in", img_file
+def sigmoid(p,x):
+    x0,y0,c,k=p
+    y = c / (1 + np.exp(-k*(x-x0))) + y0
+    return y
+
+def residuals(p,x,y):
+  return y - sigmoid(p,x)
+
+def approx_gompetz(X, Y):
+  p_guess = (np.median(X.asNumber()), np.median(Y.asNumber()), 1.0, 0.001)
+  p, cov, infodict, mesg, ier = scipy.optimize.leastsq(residuals, p_guess,
+        args=(X.asNumber(),Y.asNumber()), full_output=1)  
+  data = Unum(Y._unit) * [ sigmoid(p, x) for x in grid.asNumber() ]
   
   return data
 
@@ -101,8 +105,17 @@ def extract(var_name, deg):
   if all_data.has_key(var_name):
     data = all_data[var_name]
     X = unit_array(data["time"])
-    Y = unit_array(data["concentration"])
-    return approx(X, Y, deg, var_name)
+    Y = unit_array(data["value"])
+    
+    if var_name == 'OD':
+      func = approx_gompetz(X, Y)
+    else:
+      func = approx_poly(X, Y, deg, var_name)
+
+    title = var_name + '-polyfit-deg' + str(deg)
+    myplot(func, title, X, Y)
+
+    return func
   else:
     print 'No %s data.' % variable
     assert(False)
@@ -129,19 +142,19 @@ def calc_per_cell_per_time(product, cells, product_name):
 
 def process():
   #MccB    = extract('MccB', 2)
-  extMcC  = extract('extMcC', 2)
+  extMcC  = extract('extMcC', 1)
   cells   = extract('cells', 1)
+  OD      = extract('OD', 1)
 
   #calc_per_cell(MccB, cells, 'MccB')
   calc_per_cell(extMcC, cells, 'extMcC')
   calc_per_cell_per_time(extMcC, cells, 'extMcC')
 
 if __name__ == '__main__': 
-# takes a simplejson file with consts from lab experiments
-  assert( len(sys.argv)==2 )
-
-  data_file = sys.argv[1]
-  data_dir = os.path.dirname(data_file)
-  all_data = read_json(data_file)
-
-  process()
+  if len(sys.argv) != 2:
+    print 'One argument needed: simplejson file with consts from lab experiments'
+  else:
+    data_file = sys.argv[1]
+    data_dir = os.path.dirname(data_file)
+    all_data = read_json(data_file)
+    process()
