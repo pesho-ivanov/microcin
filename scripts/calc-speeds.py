@@ -89,7 +89,8 @@ def approx_gompetz(X, Y):
   p, cov, infodict, mesg, ier = scipy.optimize.leastsq(residuals, p_guess,
         args=(X.asNumber(),Y.asNumber()), full_output=1)  
   data = Unum(Y._unit) * [ sigmoid(p, x) for x in grid.asNumber() ]
-  
+ 
+  print p
   return data
 
 def read_json(fn):
@@ -133,12 +134,12 @@ def central_derivative(B):
 
 def calc_per_cell(product, cells, product_name):
   product_per_cell = product / cells
-  myplot(product_per_cell, product_name+'_per_cell')
+  myplot(product_per_cell, product_name)
 
 def calc_per_cell_per_time(product, cells, product_name):
   product_per_cell = product / cells
   product_per_cell_per_time = central_derivative(product_per_cell)
-  myplot(product_per_cell_per_time, product_name+'_per_cell_per_time')
+  myplot(product_per_cell_per_time, product_name)
 
 def process():
   #MccB    = extract('MccB', 2)
@@ -146,9 +147,11 @@ def process():
   cells   = extract('cells', 1)
   OD      = extract('OD', 1)
 
-  #calc_per_cell(MccB, cells, 'MccB')
-  calc_per_cell(extMcC, cells, 'extMcC')
-  calc_per_cell_per_time(extMcC, cells, 'extMcC')
+  calc_per_cell(extMcC, cells, 'extMcC_per_cell')
+  calc_per_cell_per_time(extMcC, cells, 'extMcC_per_cell_per_time')
+
+  calc_per_cell(extMcC, OD, 'extMcC_per_OD')
+  calc_per_cell_per_time(extMcC, OD, 'extMcC_per_OD_per_time')
 
 if __name__ == '__main__': 
   if len(sys.argv) != 2:
