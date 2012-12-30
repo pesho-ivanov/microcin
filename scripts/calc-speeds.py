@@ -44,7 +44,7 @@ def convert_units(num):
   assert(False)
 
 time_unit = convert_units(s)
-from_time = convert_units(2.0*h)
+from_time = convert_units(2.5*h)
 to_time = convert_units(8.0*h)
 time_steps = 300
 grid = time_unit * np.linspace(from_time.asNumber(), to_time.asNumber(), time_steps)
@@ -57,6 +57,8 @@ def myplot(data, title, X=None, Y=None):
   if not X is None and not Y is None:
     pylab.plot(X.asUnit(h).asNumber(), Y.asNumber(), 'o')
 
+  #pylab.ticklabel_format(useOffset=False)
+  #plt.autoscale()
   pylab.plot(grid_h.asNumber(), data.asNumber())
   pylab.ylabel(data.strUnit())
   pylab.xlabel(grid_h.strUnit())
@@ -88,9 +90,9 @@ def approx_gompetz(X, Y):
   p_guess = (np.median(X.asNumber()), np.median(Y.asNumber()), 1.0, 0.001)
   p, cov, infodict, mesg, ier = scipy.optimize.leastsq(residuals, p_guess,
         args=(X.asNumber(),Y.asNumber()), full_output=1)  
-  data = Unum(Y._unit) * [ sigmoid(p, x) for x in grid.asNumber() ]
- 
-  print p
+  arr = [ sigmoid(p, x) for x in grid.asNumber() ]
+  data = Unum(Y._unit) * np.array(arr)
+
   return data
 
 def read_json(fn):
@@ -108,8 +110,9 @@ def extract(var_name, deg):
     X = unit_array(data["time"])
     Y = unit_array(data["value"])
     
-    if var_name == 'OD':
+    if deg == 'gompetz':
       func = approx_gompetz(X, Y)
+      print 'gompetz'
     else:
       func = approx_poly(X, Y, deg, var_name)
 
@@ -121,7 +124,7 @@ def extract(var_name, deg):
     print 'No %s data.' % variable
     assert(False)
   
-def central_derivative(B):
+def deriv(B):
   A = B.asNumber()
 
   dt          = grid[1].asNumber() - grid[0].asNumber()
@@ -132,26 +135,54 @@ def central_derivative(B):
 
   return Unum(B._unit) / time_unit * array([first_prim] + A_prim + [last_prim])
 
-def calc_per_cell(product, cells, product_name):
-  product_per_cell = product / cells
-  myplot(product_per_cell, product_name)
-
-def calc_per_cell_per_time(product, cells, product_name):
-  product_per_cell = product / cells
-  product_per_cell_per_time = central_derivative(product_per_cell)
-  myplot(product_per_cell_per_time, product_name)
-
 def process():
-  #MccB    = extract('MccB', 2)
-  extMcC  = extract('extMcC', 1)
-  cells   = extract('cells', 1)
-  OD      = extract('OD', 1)
+  cells               = extract('cells',                1)
+  cells               = extract('cells',        'gompetz')
+  OD                  = extract('OD',           'gompetz')
 
-  calc_per_cell(extMcC, cells, 'extMcC_per_cell')
-  calc_per_cell_per_time(extMcC, cells, 'extMcC_per_cell_per_time')
+  extMcC_WT           = extract('extMcC_WT',            1)
+  intMcC_WT           = extract('intMcC_WT',            1)
+  extMcC_import       = extract('extMcC_import',        1)
+  intMcC_import       = extract('intMcC_import',        1)
+  extMcC_inact_import = extract('extMcC_inact_import',  1)
+  intMcC_inact_import = extract('intMcC_inact_import',  1)
 
-  calc_per_cell(extMcC, OD, 'extMcC_per_OD')
-  calc_per_cell_per_time(extMcC, OD, 'extMcC_per_OD_per_time')
+  extMcC_WT           = extMcC_WT / cells
+  intMcC_WT           = intMcC_WT / cells
+  extMcC_import       = extMcC_import / cells
+  intMcC_import       = intMcC_import / cells
+  extMcC_inact_import = extMcC_inact_import / cells
+  intMcC_inact_import = intMcC_inact_import / cells
+
+  # (1)-import
+  # [ molecule / s ] = [ molecule / s ] / [ molecule ]
+  export_rate = deriv(extMcC_import) / intMcC_import
+  export_rate.asUnit( 1 / s )
+  
+  #export_rate2 = deriv(extMcC_import) / intMcC_import
+  
+  # (2)WT
+  import_rate = ( export_rate * intMcC_WT - deriv(extMcC_WT)) / extMcC_WT
+  import_rate.asUnit( 1 / s )
+
+  # (2)-inact-import
+  synth_rate = deriv(intMcC_inact_import) + export_rate * intMcC_inact_import
+  synth_rate.asUnit( molecule / (CFU * s) )
+
+  # (2)-import
+  inactivation_rate = ( synth_rate - export_rate * intMcC_import - deriv(intMcC_import) ) / intMcC_import
+  inactivation_rate.asUnit( 1 / s )
+  
+  export_rate[0] *= 0.9999999
+  
+  myplot(extMcC_import, 'extMcC_import')
+  myplot(intMcC_WT, 'intMcC_WT')
+  myplot(extMcC_WT, 'extMcC_WT')
+  
+  myplot(export_rate, 'export_rate')
+  myplot(import_rate, 'import_rate')
+  myplot(synth_rate, 'synth_rate')
+  myplot(inactivation_rate, 'inactivation_rate')
 
 if __name__ == '__main__': 
   if len(sys.argv) != 2:

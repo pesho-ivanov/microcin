@@ -1,0 +1,14 @@
+digraph G {
+  ordering=out
+  label="Microcin system"
+
+  1 [label="McC"];
+  2 [label="pMcC"];
+
+  { rank=min
+    1
+    2 }
+
+  1 -> 2 [style=bold,label="processing"];
+}
+
