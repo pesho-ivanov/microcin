@@ -155,13 +155,19 @@ def process():
   extMcC_inact_import = extract('extMcC_inact_import',  1)
   intMcC_inact_import = extract('intMcC_inact_import',  1)
 
-  # useless
-  extMcC_inact        = extract('extMcC_inact',         1)
-  intMcC_inact        = extract('intMcC_inact',         1)
-  extMcC_inact        = extMcC_inact / cells
-  intMcC_inact        = intMcC_inact / cells
-  myplot(extMcC_inact, 'extMcC_inact')
-  myplot(intMcC_inact, 'intMcC_inact')
+  # useless *_inact
+  extMcC_inact          = extract('extMcC_inact',         1)
+  intMcC_inact          = extract('intMcC_inact',         1)
+  extMcC_percell_inact  = extMcC_inact / cells
+  intMcC_percell_inact  = intMcC_inact / cells
+  myplot(extMcC_percell_inact, 'extMcC_percell_inact')
+  myplot(intMcC_percell_inact, 'intMcC_percell_inact')
+
+  extMcC_perOD_inact  = extMcC_inact / OD
+  intMcC_perOD_inact  = intMcC_inact / OD
+  myplot(extMcC_perOD_inact, 'extMcC_perOD_inact')
+  myplot(intMcC_perOD_inact, 'intMcC_perOD_inact')
+  # end of *_inact
 
   try:
     extMcC_WT           = extMcC_WT / cells
