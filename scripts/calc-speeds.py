@@ -24,8 +24,8 @@ avogadro  = 6.02214129e23
 
 CFU       = unit("CFU",       0,              "colony-forming unit")
 OD_unit   = unit("OD",        0,              "optical density unit")
-molecule  = unit("molecule", mol / avogadro )
-ml        = unit("ml",       10**-3 * L,     "milliliter")
+molecule  = unit("molecule",  mol / avogadro )
+ml        = unit("ml",        10**-3 * L,     "milliliter")
 #ul        = unit("ul",       10**-6 * L,     "microliter")
 
 possible_unit_expressions = { s, molecule/L, CFU/L, OD_unit, kg/L }
@@ -40,7 +40,8 @@ def convert_units(num):
       pass
     else:
       if res.strUnit() == '[kg/L]':
-        return (molecule/L) * (res.asNumber() * mols_in_kg)
+        res = (mol/L) * (res.asNumber() * mols_in_kg)
+        return res.asUnit(molecule/L)
       else:
         return res
 
@@ -48,8 +49,10 @@ def convert_units(num):
   assert(False)
 
 time_unit = convert_units(s)
-from_time = convert_units(2.5*h)
-to_time = convert_units(8.0*h)
+#from_time = convert_units(2.5*h)
+from_time = convert_units(4.5*h)
+#to_time = convert_units(8.0*h)
+to_time = convert_units(20.0*h)
 time_steps = 300
 grid = time_unit * np.linspace(from_time.asNumber(), to_time.asNumber(), time_steps)
 
@@ -155,6 +158,10 @@ def process():
   # useless
   extMcC_inact        = extract('extMcC_inact',         1)
   intMcC_inact        = extract('intMcC_inact',         1)
+  extMcC_inact        = extMcC_inact / cells
+  intMcC_inact        = intMcC_inact / cells
+  myplot(extMcC_inact, 'extMcC_WT')
+  myplot(intMcC_inact, 'intMcC_WT')
 
   try:
     extMcC_WT           = extMcC_WT / cells
