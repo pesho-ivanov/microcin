@@ -28,7 +28,8 @@ molecule  = unit("molecule", mol / avogadro )
 ml        = unit("ml",       10**-3 * L,     "milliliter")
 #ul        = unit("ul",       10**-6 * L,     "microliter")
 
-possible_unit_expressions = { s, molecule/L, CFU/L, OD_unit }
+possible_unit_expressions = { s, molecule/L, CFU/L, OD_unit, kg/L }
+mols_in_kg = 1 / 1.178
 
 # all the equivalent to the lab-data units simple units
 def convert_units(num):
@@ -38,9 +39,12 @@ def convert_units(num):
     except IncompatibleUnitsError:
       pass
     else:
-      return res
+      if res.strUnit() == '[kg/L]':
+        return (molecule/L) * (res.asNumber() * mols_in_kg)
+      else:
+        return res
 
-  print 'No possible unit conversion for ', res
+  print 'No possible unit conversion for ', num
   assert(False)
 
 time_unit = convert_units(s)
@@ -121,8 +125,8 @@ def extract(var_name, deg):
 
     return func
   else:
-    print 'No %s data.' % variable
-    assert(False)
+    print 'No %s data.' % var_name
+    #assert(False)
   
 def deriv(B):
   A = B.asNumber()
@@ -137,8 +141,9 @@ def deriv(B):
 
 def process():
   cells               = extract('cells',                1)
-  cells               = extract('cells',        'gompetz')
-  OD                  = extract('OD',           'gompetz')
+  #cells               = extract('cells',        'gompetz') 
+  OD                  = extract('OD',                   1)
+  #OD                  = extract('OD',           'gompetz')
 
   extMcC_WT           = extract('extMcC_WT',            1)
   intMcC_WT           = extract('intMcC_WT',            1)
@@ -147,42 +152,52 @@ def process():
   extMcC_inact_import = extract('extMcC_inact_import',  1)
   intMcC_inact_import = extract('intMcC_inact_import',  1)
 
-  extMcC_WT           = extMcC_WT / cells
-  intMcC_WT           = intMcC_WT / cells
-  extMcC_import       = extMcC_import / cells
-  intMcC_import       = intMcC_import / cells
-  extMcC_inact_import = extMcC_inact_import / cells
-  intMcC_inact_import = intMcC_inact_import / cells
+  # useless
+  extMcC_inact        = extract('extMcC_inact',         1)
+  intMcC_inact        = extract('intMcC_inact',         1)
 
-  # (1)-import
-  # [ molecule / s ] = [ molecule / s ] / [ molecule ]
-  export_rate = deriv(extMcC_import) / intMcC_import
-  export_rate.asUnit( 1 / s )
-  
-  #export_rate2 = deriv(extMcC_import) / intMcC_import
-  
-  # (2)WT
-  import_rate = ( export_rate * intMcC_WT - deriv(extMcC_WT)) / extMcC_WT
-  import_rate.asUnit( 1 / s )
+  try:
+    extMcC_WT           = extMcC_WT / cells
+    intMcC_WT           = intMcC_WT / cells
+    extMcC_import       = extMcC_import / cells
+    intMcC_import       = intMcC_import / cells
+    extMcC_inact_import = extMcC_inact_import / cells
+    intMcC_inact_import = intMcC_inact_import / cells
 
-  # (2)-inact-import
-  synth_rate = deriv(intMcC_inact_import) + export_rate * intMcC_inact_import
-  synth_rate.asUnit( molecule / (CFU * s) )
+    # (1)-import
+    # [ molecule / s ] = [ molecule / s ] / [ molecule ]
+    export_rate = deriv(extMcC_import) / intMcC_import
+    export_rate.asUnit( 1 / s )
+    
+    #export_rate2 = deriv(extMcC_import) / intMcC_import
+    
+    # (2)WT
+    import_rate = ( export_rate * intMcC_WT - deriv(extMcC_WT)) / extMcC_WT
+    import_rate.asUnit( 1 / s )
 
-  # (2)-import
-  inactivation_rate = ( synth_rate - export_rate * intMcC_import - deriv(intMcC_import) ) / intMcC_import
-  inactivation_rate.asUnit( 1 / s )
-  
-  export_rate[0] *= 0.9999999
-  
-  myplot(extMcC_import, 'extMcC_import')
-  myplot(intMcC_WT, 'intMcC_WT')
-  myplot(extMcC_WT, 'extMcC_WT')
-  
-  myplot(export_rate, 'export_rate')
-  myplot(import_rate, 'import_rate')
-  myplot(synth_rate, 'synth_rate')
-  myplot(inactivation_rate, 'inactivation_rate')
+    # (2)-inact-import
+    synth_rate = deriv(intMcC_inact_import) + export_rate * intMcC_inact_import
+    synth_rate.asUnit( molecule / (CFU * s) )
+
+    # (2)-import
+    inactivation_rate = ( synth_rate - export_rate * intMcC_import - deriv(intMcC_import) ) / intMcC_import
+    inactivation_rate.asUnit( 1 / s )
+    
+    export_rate[0] *= 0.9999999
+    
+    myplot(extMcC_import, 'extMcC_import')
+    myplot(intMcC_WT, 'intMcC_WT')
+    myplot(extMcC_WT, 'extMcC_WT')
+    
+    myplot(export_rate, 'export_rate')
+    myplot(import_rate, 'import_rate')
+    myplot(synth_rate, 'synth_rate')
+    myplot(inactivation_rate, 'inactivation_rate')
+  except:
+    print 'Calculation error!'
+    pass
+  else:
+    return
 
 if __name__ == '__main__': 
   if len(sys.argv) != 2:

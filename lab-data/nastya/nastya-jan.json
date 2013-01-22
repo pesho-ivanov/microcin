@@ -1,0 +1,21 @@
+{
+  "OD": {
+    "time":   [ "h",      [ 5,    19  ] ],
+    "value":  [ "OD_unit",[ 0.8,  4.8 ] ]
+  },
+
+  "cells": { 
+    "time":   [ "h",      [ 5,      19    ] ],
+    "value":  [ "CFU/ml", [ 7E+08,  1E+10 ] ]
+  },
+
+  "extMcC_inact": {
+    "time":   [ "h",      [ 5,    19    ] ],
+    "value":  [ "ug/ml",  [ 0.7,  30.0  ] ]
+  },
+  
+  "intMcC_inact": {
+    "time":   [ "h",      [ 5,     19   ] ],
+    "value":  [ "ug/ml",  [ 5E-3,  0.12 ] ] 
+  }
+}
