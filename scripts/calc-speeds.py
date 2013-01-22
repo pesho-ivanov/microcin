@@ -160,8 +160,8 @@ def process():
   intMcC_inact        = extract('intMcC_inact',         1)
   extMcC_inact        = extMcC_inact / cells
   intMcC_inact        = intMcC_inact / cells
-  myplot(extMcC_inact, 'extMcC_WT')
-  myplot(intMcC_inact, 'intMcC_WT')
+  myplot(extMcC_inact, 'extMcC_inact')
+  myplot(intMcC_inact, 'intMcC_inact')
 
   try:
     extMcC_WT           = extMcC_WT / cells
