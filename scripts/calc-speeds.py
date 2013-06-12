@@ -50,9 +50,9 @@ def convert_units(num):
 
 time_unit = convert_units(s)
 #from_time = convert_units(2.5*h)
-from_time = convert_units(4.5*h)
+from_time = convert_units(12.0*h)
 #to_time = convert_units(8.0*h)
-to_time = convert_units(20.0*h)
+to_time = convert_units(24.0*h)
 time_steps = 300
 grid = time_unit * np.linspace(from_time.asNumber(), to_time.asNumber(), time_steps)
 
@@ -87,16 +87,24 @@ def approx_poly(X, Y, polydeg, var_name):
 
 def sigmoid(p,x):
     x0,y0,c,k=p
-    y = c / (1 + np.exp(-k*(x-x0))) + y0
+    #print p 
+    y = (y0 - c) / (1 + np.exp(-k*(x-x0))) + y0
     return y
 
 def residuals(p,x,y):
   return y - sigmoid(p,x)
 
-def approx_gompetz(X, Y):
-  p_guess = (np.median(X.asNumber()), np.median(Y.asNumber()), 1.0, 0.001)
+def approx_gompertz(X, Y, var_name):
+  p_guess = (np.median(X.asNumber()), np.median(Y.asNumber()), max(Y.asNumber()), 0.00001)
   p, cov, infodict, mesg, ier = scipy.optimize.leastsq(residuals, p_guess,
         args=(X.asNumber(),Y.asNumber()), full_output=1)  
+  
+  # kastili
+  if var_name == 'extMcC_WT':
+    p[3] /= 10.0
+  elif var_name == 'extMcC_inact_import':
+    p[3] /= 2.0
+
   arr = [ sigmoid(p, x) for x in grid.asNumber() ]
   data = Unum(Y._unit) * np.array(arr)
 
@@ -117,15 +125,15 @@ def extract(var_name, deg):
     X = unit_array(data["time"])
     Y = unit_array(data["value"])
     
-    if deg == 'gompetz':
-      func = approx_gompetz(X, Y)
-      print 'gompetz'
+    if deg == 'gompertz':
+      func = approx_gompertz(X, Y, var_name)
+      title = var_name + '-gompertz'
+      #print 'gompertz'
     else:
       func = approx_poly(X, Y, deg, var_name)
+      title = var_name + '-polyfit-deg' + str(deg)
 
-    title = var_name + '-polyfit-deg' + str(deg)
     myplot(func, title, X, Y)
-
     return func
   else:
     print 'No %s data.' % var_name
@@ -143,39 +151,58 @@ def deriv(B):
   return Unum(B._unit) / time_unit * array([first_prim] + A_prim + [last_prim])
 
 def process():
-  cells               = extract('cells',                1)
-  #cells               = extract('cells',        'gompetz') 
-  OD                  = extract('OD',                   1)
-  #OD                  = extract('OD',           'gompetz')
+  cells_WT            = extract('cells_WT',                2)
+  cells_import        = extract('cells_import',            1)
+  cells_inact_import  = extract('cells_inact_import',      1)
 
-  extMcC_WT           = extract('extMcC_WT',            1)
-  intMcC_WT           = extract('intMcC_WT',            1)
-  extMcC_import       = extract('extMcC_import',        1)
-  intMcC_import       = extract('intMcC_import',        1)
-  extMcC_inact_import = extract('extMcC_inact_import',  1)
-  intMcC_inact_import = extract('intMcC_inact_import',  1)
+  OD_WT               = extract('OD_WT',                2)
+  OD_import           = extract('OD_import',            1)
+  OD_inact_import     = extract('OD_inact_import',      1)
+
+# http://www.eng.umd.edu/~nsw/ench485/lab9c.htm 
+# As a rule of thumb, an optical density of 1 unit
+# corresponds to approximately 1 g/l of dry cell
+  OD_WT               = (g / L) * OD_WT.asNumber()
+  OD_import           = (g / L) * OD_import.asNumber()
+  OD_inact_import     = (g / L) * OD_inact_import.asNumber()
+
+  intMcC_WT           = extract('intMcC_WT',            'gompertz')
+  extMcC_WT           = extract('extMcC_WT',            'gompertz')
+  intMcC_import       = extract('intMcC_import',        'gompertz')
+  extMcC_import       = extract('extMcC_import',        2)
+  intMcC_inact_import = extract('intMcC_inact_import',  2)
+  extMcC_inact_import = extract('extMcC_inact_import',  'gompertz')
 
   # useless *_inact
-  extMcC_inact          = extract('extMcC_inact',         1)
-  intMcC_inact          = extract('intMcC_inact',         1)
-  extMcC_percell_inact  = extMcC_inact / cells
-  intMcC_percell_inact  = intMcC_inact / cells
-  myplot(extMcC_percell_inact, 'extMcC_percell_inact')
-  myplot(intMcC_percell_inact, 'intMcC_percell_inact')
+  #extMcC_inact          = extract('extMcC_inact',         1)
+  #intMcC_inact          = extract('intMcC_inact',         1)
+  #extMcC_percell_inact  = extMcC_inact / cells
+  #intMcC_percell_inact  = intMcC_inact / cells
+  #myplot(extMcC_percell_inact, 'extMcC_percell_inact')
+  #myplot(intMcC_percell_inact, 'intMcC_percell_inact')
 
-  extMcC_perOD_inact  = extMcC_inact / OD
-  intMcC_perOD_inact  = intMcC_inact / OD
-  myplot(extMcC_perOD_inact, 'extMcC_perOD_inact')
-  myplot(intMcC_perOD_inact, 'intMcC_perOD_inact')
+  #if 'OD' in locals():
+  #  extMcC_perOD_inact  = extMcC_inact / OD
+  #  intMcC_perOD_inact  = intMcC_inact / OD
+  #  myplot(extMcC_perOD_inact, 'extMcC_perOD_inact')
+  #  myplot(intMcC_perOD_inact, 'intMcC_perOD_inact')
   # end of *_inact
 
   try:
-    extMcC_WT           = extMcC_WT / cells
-    intMcC_WT           = intMcC_WT / cells
-    extMcC_import       = extMcC_import / cells
-    intMcC_import       = intMcC_import / cells
-    extMcC_inact_import = extMcC_inact_import / cells
-    intMcC_inact_import = intMcC_inact_import / cells
+    # cell normalization
+    #extMcC_WT           = extMcC_WT / cells_WT
+    #intMcC_WT           = intMcC_WT / cells_WT
+    #extMcC_import       = extMcC_import / cells_import
+    #intMcC_import       = intMcC_import / cells_import
+    #extMcC_inact_import = extMcC_inact_import / cells_inact_import
+    #intMcC_inact_import = intMcC_inact_import / cells_inact_import
+    
+    extMcC_WT           = extMcC_WT / OD_WT
+    intMcC_WT           = intMcC_WT / OD_WT
+    extMcC_import       = extMcC_import / OD_import
+    intMcC_import       = intMcC_import / OD_import
+    extMcC_inact_import = extMcC_inact_import / OD_inact_import
+    intMcC_inact_import = intMcC_inact_import / OD_inact_import
 
     # (1)-import
     # [ molecule / s ] = [ molecule / s ] / [ molecule ]
@@ -190,23 +217,29 @@ def process():
 
     # (2)-inact-import
     synth_rate = deriv(intMcC_inact_import) + export_rate * intMcC_inact_import
-    synth_rate.asUnit( molecule / (CFU * s) )
+    synth_rate.asUnit( molecule / (g * s) )
+    #synth_rate.asUnit( molecule / (CFU * s) )
 
     # (2)-import
     inactivation_rate = ( synth_rate - export_rate * intMcC_import - deriv(intMcC_import) ) / intMcC_import
     inactivation_rate.asUnit( 1 / s )
     
+
     export_rate[0] *= 0.9999999
     
-    myplot(extMcC_import, 'extMcC_import')
     myplot(intMcC_WT, 'intMcC_WT')
     myplot(extMcC_WT, 'extMcC_WT')
+    myplot(intMcC_import, 'intMcC_import')
+    myplot(extMcC_import, 'extMcC_import')
+    myplot(intMcC_inact_import, 'intMcC_inact_import')
+    myplot(extMcC_inact_import, 'extMcC_inact_import')
     
     myplot(export_rate, 'export_rate')
     myplot(import_rate, 'import_rate')
     myplot(synth_rate, 'synth_rate')
     myplot(inactivation_rate, 'inactivation_rate')
-  except:
+  except Exception, e:
+    print "Couldn't do it: %s" % e
     print 'Calculation error!'
     pass
   else:
@@ -218,5 +251,7 @@ if __name__ == '__main__':
   else:
     data_file = sys.argv[1]
     data_dir = os.path.dirname(data_file)
+    data_dir = os.path.join(data_dir, 'graphics')
     all_data = read_json(data_file)
     process()
+
